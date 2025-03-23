@@ -1,8 +1,21 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
 import '../styles/main.css';
+import { useNavigate } from 'react-router-dom';
 
 const Main = () => {
+
+  const navigate = useNavigate(); 
+
+  const handleLoginClick = () => {
+    navigate('/login'); 
+  };
+
+  const handleRegisterClick = () => {
+    navigate('/registro'); 
+  };
+
+
+
   return (
     <div className="app">
       <header className="header">
@@ -16,7 +29,9 @@ const Main = () => {
               <li><a href="#support">Support</a></li>
             </ul>
           </nav>
-          <button className="login-btn">Log in</button>
+          <button className="login-btn" onClick={handleLoginClick}>
+            Log in
+          </button>
         </div>
       </header>
 
@@ -37,7 +52,9 @@ const Main = () => {
                   className="email-input"
                 />
               </div>
-              <button className="cta-button">Empezar</button>
+              <button className="cta-button" onClick={handleRegisterClick}>
+                Empezar
+              </button>
             </div>
           </div>
           <div className="hero-overlay"></div>
