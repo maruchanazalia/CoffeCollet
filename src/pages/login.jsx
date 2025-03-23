@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import '../styles/login.css';
 
 const Login = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -50,21 +51,36 @@ const Login = () => {
       setIsLoading(true);
       
       try {
-        // Here you would integrate with your authentication API
-        // Example:
-        // const response = await loginUser(formData);
+        // Connect to your API endpoint
+        const response = await fetch('http://localhost:2025/api/users/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
         
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        const data = await response.json();
         
-        console.log('Login successful:', formData);
-        // Redirect to dashboard or home page after successful login
-        // history.push('/dashboard');
+        if (!response.ok) {
+          throw new Error(data.message || 'Error al iniciar sesión');
+        }
+        
+        if (data.success && data.token) {
+
+          localStorage.setItem('token', data.token);
+          
+          console.log('Login successful:', data);
+          
+          navigate('/mainview');
+        } else {
+          throw new Error('No se recibió token de autenticación');
+        }
         
       } catch (error) {
         console.error('Login error:', error);
         setErrors({ 
-          form: 'Error al iniciar sesión. Por favor verifica tus credenciales.' 
+          form: error.message || 'Error al iniciar sesión. Por favor verifica tus credenciales.' 
         });
       } finally {
         setIsLoading(false);

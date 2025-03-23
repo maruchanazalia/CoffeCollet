@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import '../styles/registro.css';
 
 const Registro = () => {
@@ -10,11 +12,12 @@ const Registro = () => {
     lastname: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    id: ''
+    confirmPassword: ''
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -72,10 +75,6 @@ const Registro = () => {
       newErrors.confirmPassword = 'Las contraseñas no coinciden';
     }
     
-    if (!formData.id.trim()) {
-      newErrors.id = 'El ID es obligatorio';
-    }
-    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -93,22 +92,38 @@ const Registro = () => {
       setIsLoading(true);
       
       try {
-        // Here you would integrate with your registration API
-        // Example:
-        // const response = await registerUser(formData);
+        // Convert string type to numeric value (0 for comprador, 1 for comerciante)
+        const userTypeValue = formData.type === 'comprador' ? 0 : 1;
         
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Create an object with only the necessary data for registration
+        const registrationData = {
+          type: userTypeValue,
+          name: formData.name,
+          lastname: formData.lastname,
+          email: formData.email,
+          password: formData.password
+        };
+  
+        // Send only the necessary data to the API
+        const response = await axios.post('http://localhost:2025/api/users/register', registrationData);
         
-        console.log('Registration successful:', formData);
-        // Redirect to login or dashboard page after successful registration
-        // history.push('/login');
+        console.log('Registration successful:', response.data);
+        
+        // Redirect the user to the login page
+        navigate('/login');
         
       } catch (error) {
         console.error('Registration error:', error);
-        setErrors({ 
-          form: 'Error al registrar. Por favor intenta de nuevo más tarde.' 
-        });
+        
+        if (error.response) {
+          setErrors({ 
+            form: error.response.data.message || 'Error al registrar. Por favor intenta de nuevo más tarde.' 
+          });
+        } else {
+          setErrors({ 
+            form: 'Error de conexión. Por favor intenta de nuevo más tarde.' 
+          });
+        }
       } finally {
         setIsLoading(false);
       }
@@ -213,20 +228,6 @@ const Registro = () => {
                   className={errors.email ? 'input-error' : ''}
                 />
                 {errors.email && <span className="error-text">{errors.email}</span>}
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="id">ID / Documento de Identidad</label>
-                <input
-                  type="text"
-                  id="id"
-                  name="id"
-                  value={formData.id}
-                  onChange={handleChange}
-                  placeholder="Número de identificación"
-                  className={errors.id ? 'input-error' : ''}
-                />
-                {errors.id && <span className="error-text">{errors.id}</span>}
               </div>
               
               <div className="form-row">
